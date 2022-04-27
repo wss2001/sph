@@ -9,21 +9,21 @@ const state = {
 const actions = {
     async getCategoryList(context,value){
         let result = await getBaseCategoryList()
-        console.log(result);
+        // console.log(result);
         if(result.code===200){
             context.commit('GETCATEGORYLIST',result.data)
         }
     },
     async getBannerList(context,value){
         let result = await getMockBannerList()
-        console.log(result);
+        // console.log(result);
         if(result.code===200){
             context.commit('GETBANNERLIST',result.data)
         }
     },
     async getFloorList(context,value){
         let result = await getMockFloorList()
-        console.log(result);
+        // console.log(result);
         if(result.code===200){
             context.commit('GETFLOORLIST',result.data)
         }

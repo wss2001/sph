@@ -21,10 +21,15 @@ import 'swiper/css/swiper.css'
 Vue.component(TypeNav.name,TypeNav)
 Vue.component(LunBo.name,LunBo)
 
+
 Vue.config.productionTip = false
 
 new Vue({
   render: h => h(App),
+  beforeCreate(){
+    // 全局事件总线
+  Vue.prototype.$bus = this
+  },
   router,
   store
 }).$mount('#app')

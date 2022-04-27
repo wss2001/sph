@@ -48,6 +48,11 @@ export default {
             keyword:''
         }
     },
+    mounted() {
+        this.$bus.$on('clear',()=>{
+            this.keyword = ''
+        })
+    },
     methods: {
         // 声明式导航没有这个问题，连续点击会产生问题
         goSearch(){

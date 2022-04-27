@@ -11,15 +11,15 @@
             </li>
           </ul>
           <ul class="fl sui-tag">
-            <li class="with-x">手机</li>
-            <li class="with-x">iphone<i>×</i></li>
-            <li class="with-x">华为<i>×</i></li>
-            <li class="with-x">OPPO<i>×</i></li>
+            <li class="with-x" v-show="searchParams.categoryName">{{this.searchParams.categoryName}}<i @click="removeCategoryName">×</i></li>
+            <li class="with-x" v-show="searchParams.keyword">{{this.searchParams.keyword}}<i @click="removeKeyword">×</i></li>
+            <li class="with-x" v-show="searchParams.trademark">{{this.searchParams.trademark.split(':')[1]}}<i @click="removeTrademark">×</i></li>
           </ul>
         </div>
 
         <!--selector-->
-        <SearchSelector />
+        <!-- 定义自定义事件 -->
+        <SearchSelector @trademarkInfo="trademarkInf"/>
 
         <!--details-->
         <div class="details clearfix">
@@ -119,13 +119,92 @@
     components: {
       SearchSelector
     },
+    data() {
+      return {
+        searchParams: {
+        //产品相应的id
+        category1Id: "",
+        category2Id: "",
+        category3Id: "",
+        //产品的名字
+        categoryName: "",
+        //搜索的关键字
+        keyword: "",
+        //排序:初始状态应该是综合且降序
+        order: "1:desc",
+        //第几页
+        pageNo: 1,
+        //每一页展示条数
+        pageSize: 3,
+        //平台属性的操作
+        props: [],
+        //品牌
+        trademark: "",
+      },
+      }
+    },
+    beforeMount() {
+      Object.assign(this.searchParams, this.$route.query, this.$route.params);
+    },
     mounted() {
-      this.$store.dispatch('getSearchList')
+      this.getData()
     },
     computed: {
       // 通过getter获取数据，不然用state每次都很麻烦
       // getters存在于全vuex中，并没有分模块
       ...mapGetters(['goodsList'])
+    },
+    methods: {
+      getData(){
+        this.$store.dispatch('getSearchList',this.searchParams)
+      },
+      // 移除面包✍函数，点击时先把data里的数据清空一部分，再重新发起请求数据，再改变地址栏的东西
+      removeCategoryName(){
+        this.searchParams.categoryName = undefined
+        this.searchParams.category1Id = undefined;
+        this.searchParams.category2Id = undefined;
+        this.searchParams.category3Id = undefined;
+        this.getData()
+        if(this.$route.params){
+          this.$router.push({name:'search',params:this.$route.params})
+        }else{
+          this.$router.push({name:'search'})
+        }
+      },
+      removeKeyword(){
+        this.searchParams.keyword = undefined
+        this.getData()
+        this.$bus.$emit('clear')
+        if(this.$route.query){
+          this.$router.push({name:'search',query:this.$route.query})
+        }else{
+          this.$router.push({name:'search'})
+        }
+      },
+      trademarkInf(item){
+        // console.log(item);
+        this.searchParams.trademark = `${item.tmId}:${item.tmName}`
+        this.getData()
+      },
+      removeTrademark(){
+        this.searchParams.trademark = ''
+        this.getData()
+      }
+    },
+    watch: {
+      $route(newValue, oldValue) {
+      //每一次请求完毕，应该把相应的1、2、3级分类的id置空的，让他接受下一次的相应1、2、3
+      //再次发请求之前整理带给服务器参数
+      Object.assign(this.searchParams, this.$route.query, this.$route.params);
+      // console.log(this.searchParams);
+      //再次发起ajax请求
+      this.getData();
+      
+      //分类名字与关键字不用清理：因为每一次路由发生变化的时候，都会给他赋予新的数据
+      this.searchParams.category1Id = undefined;
+      this.searchParams.category2Id = undefined;
+      this.searchParams.category3Id = undefined;
+    },
     },
   }
 </script>

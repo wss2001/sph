@@ -4,7 +4,7 @@
       <div class="fl key brand">品牌</div>
       <div class="value logos">
         <ul class="logo-list">
-          <li v-for="item in trademarkList" :key="item.tmId">{{item.tmName}}</li>
+          <li v-for="item in trademarkList" :key="item.tmId" @click="trademarkHandle(item)">{{item.tmName}}</li>
         </ul>
       </div>
       <div class="ext">
@@ -33,6 +33,12 @@ import {mapGetters} from 'vuex'
     name: 'SearchSelector',
     computed: {
       ...mapGetters(['attrsList','trademarkList'])
+    },
+    methods: {
+      // 虽然说在子组件中点击的品牌，但是得传递给父组件中让其在获取数据，因为父组件具有data的哪些数据，才可以进行带值操作
+      trademarkHandle(item){
+        this.$emit('trademarkInfo',item)
+      }
     },
   }
 </script>
