@@ -15,3 +15,7 @@ export const getMockFloorList = ()=>{
 export const reqGetSearchList = (params)=>{
     return requests({url:'/list',method:'POST',data:params})
 }
+// 引入goods详情界面
+export const reqGetDetail=(skuid)=>{
+    return requests({url:`item/${skuid}`,method:'GET'})
+}

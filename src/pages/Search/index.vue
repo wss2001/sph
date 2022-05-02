@@ -14,35 +14,24 @@
             <li class="with-x" v-show="searchParams.categoryName">{{this.searchParams.categoryName}}<i @click="removeCategoryName">×</i></li>
             <li class="with-x" v-show="searchParams.keyword">{{this.searchParams.keyword}}<i @click="removeKeyword">×</i></li>
             <li class="with-x" v-show="searchParams.trademark">{{this.searchParams.trademark.split(':')[1]}}<i @click="removeTrademark">×</i></li>
+            <li class="with-x" v-for="(attr,index) in searchParams.props" :key="index">{{attr.split(':')[1]}}<i @click="removeAttr(index)">×</i></li>
           </ul>
         </div>
 
         <!--selector-->
         <!-- 定义自定义事件 -->
-        <SearchSelector @trademarkInfo="trademarkInf"/>
+        <SearchSelector @trademarkInfo="trademarkInf" @attrInfo="attrInfo"/>
 
         <!--details-->
         <div class="details clearfix">
           <div class="sui-navbar">
             <div class="navbar-inner filter">
               <ul class="sui-nav">
-                <li class="active">
-                  <a href="#">综合</a>
+                <li :class="{active:isOne}" @click="changeOrder('1')">
+                  <a>综合 <span v-show="isOne" class="iconfont" ></span></a>
                 </li>
-                <li>
-                  <a href="#">销量</a>
-                </li>
-                <li>
-                  <a href="#">新品</a>
-                </li>
-                <li>
-                  <a href="#">评价</a>
-                </li>
-                <li>
-                  <a href="#">价格⬆</a>
-                </li>
-                <li>
-                  <a href="#">价格⬇</a>
+                <li :class="{active:isTwo}" @click="changeOrder('2')">
+                  <a>价格 <span v-show="isTwo" class="iconfont" :class="{'angle-double-down':isDesc,'run-up':isAsc}"></span></a>
                 </li>
               </ul>
             </div>
@@ -52,7 +41,7 @@
               <li class="yui3-u-1-5" v-for="good in goodsList" :key="good.id">
                 <div class="list-wrap">
                   <div class="p-img">
-                    <a href="item.html" target="_blank"><img :src="good.defaultImg" /></a>
+                    <router-link :to="`/detail/${good.id}`"><img :src="good.defaultImg" /></router-link>
                   </div>
                   <div class="price">
                     <strong>
@@ -76,35 +65,7 @@
               </li>
             </ul>
           </div>
-          <div class="fr page">
-            <div class="sui-pagination clearfix">
-              <ul>
-                <li class="prev disabled">
-                  <a href="#">«上一页</a>
-                </li>
-                <li class="active">
-                  <a href="#">1</a>
-                </li>
-                <li>
-                  <a href="#">2</a>
-                </li>
-                <li>
-                  <a href="#">3</a>
-                </li>
-                <li>
-                  <a href="#">4</a>
-                </li>
-                <li>
-                  <a href="#">5</a>
-                </li>
-                <li class="dotted"><span>...</span></li>
-                <li class="next">
-                  <a href="#">下一页»</a>
-                </li>
-              </ul>
-              <div><span>共10页&nbsp;</span></div>
-            </div>
-          </div>
+          <Pagination :total="total" :pageSize="searchParams.pageSize" :continues="5" :pageNo="searchParams.pageNo" @getPageNo="getPageNo"></Pagination>
         </div>
       </div>
     </div>
@@ -114,6 +75,7 @@
 <script>
   import SearchSelector from './SearchSelector/SearchSelector'
   import {mapGetters} from 'vuex'
+  import {mapState} from 'vuex'
   export default {
     name: 'Search',
     components: {
@@ -152,9 +114,25 @@
     computed: {
       // 通过getter获取数据，不然用state每次都很麻烦
       // getters存在于全vuex中，并没有分模块
-      ...mapGetters(['goodsList'])
+      ...mapGetters(['goodsList']),
+      isOne(){
+        return this.searchParams.order.indexOf('1')!=-1
+      },
+      isTwo(){
+        return this.searchParams.order.indexOf('2')!=-1
+      },
+      isAsc(){
+        return this.searchParams.order.indexOf('asc')!=-1
+      },
+      isDesc(){
+        return this.searchParams.order.indexOf('desc')!=-1
+      },
+      ...mapState({
+        total:state=>state.search.searchList.total
+      })
     },
     methods: {
+      // 发起请求函数
       getData(){
         this.$store.dispatch('getSearchList',this.searchParams)
       },
@@ -181,6 +159,7 @@
           this.$router.push({name:'search'})
         }
       },
+      // 子组件传递过来的数据trademark也就是品牌，构成面包屑，以及清除
       trademarkInf(item){
         // console.log(item);
         this.searchParams.trademark = `${item.tmId}:${item.tmName}`
@@ -188,6 +167,37 @@
       },
       removeTrademark(){
         this.searchParams.trademark = ''
+        this.getData()
+      },
+      // 子组件传递过来的数据attr也就是详情，构成面包屑，以及清除
+      attrInfo(attr,attrValue){
+        let prop = `${attr.attrId}:${attrValue}:${attr.attrName}`
+        if(this.searchParams.props.indexOf(prop) ===-1){
+          this.searchParams.props.push(prop)
+        }
+        this.getData()
+      },
+      removeAttr(index){
+        this.searchParams.props.splice(index,1)
+        this.getData()
+      },
+      // 改变order升序降序
+      changeOrder(flag){
+        // 切除order为一个数组
+        let orderFlag = this.searchParams.order.split(':')[0]
+        let orderSort = this.searchParams.order.split(':')[1]
+        let newOrder = ''
+        if(flag == orderFlag){
+          newOrder = `${orderFlag}:${orderSort=='desc'?'asc':'desc'}`
+        }else{
+          newOrder = `${flag}:${orderSort}`
+        }
+        this.searchParams.order = newOrder
+        this.getData()
+      },
+      // 自定义事件获取页码,并且更新数据
+      getPageNo(pageNo){
+        this.searchParams.pageNo = pageNo
         this.getData()
       }
     },

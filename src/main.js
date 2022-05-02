@@ -8,6 +8,7 @@ import store from '@/store'
 // 引入全局组件
 import TypeNav from './pages/Home/TypeNav'
 import LunBo from '@/components/LunBo'
+import Pagination from '@/components/Pagination'
 
 // 引入接口数据
 import {getBaseCategoryList} from '@/api'
@@ -20,7 +21,7 @@ import 'swiper/css/swiper.css'
 // 注册全局组件
 Vue.component(TypeNav.name,TypeNav)
 Vue.component(LunBo.name,LunBo)
-
+Vue.component(Pagination.name,Pagination)
 
 Vue.config.productionTip = false
 

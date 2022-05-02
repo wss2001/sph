@@ -16,7 +16,7 @@
       <div class="fl key">{{attr.attrName}}</div>
       <div class="fl value">
         <ul class="type-list">
-          <li v-for="(attrValue,index) in attr.attrValueList" :key="index">
+          <li v-for="(attrValue,index) in attr.attrValueList" :key="index" @click="attrHandle(attr,attrValue)">
             <a>{{attrValue}}</a>
           </li>
         </ul>
@@ -38,6 +38,10 @@ import {mapGetters} from 'vuex'
       // 虽然说在子组件中点击的品牌，但是得传递给父组件中让其在获取数据，因为父组件具有data的哪些数据，才可以进行带值操作
       trademarkHandle(item){
         this.$emit('trademarkInfo',item)
+      },
+      // 详情传递数据
+      attrHandle(attr,attrValue){
+        this.$emit('attrInfo',attr,attrValue)
       }
     },
   }
